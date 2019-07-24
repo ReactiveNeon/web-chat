@@ -9,18 +9,15 @@
 
 .chat-ui {
     position: fixed;
-    left: 0;
+    padding-left: 0;
     bottom: 0;
-    width: 100%;
+    width: 70%;
     color: white;
-    text-align: center;
-
-    vertical-align: middle;
 }
 
 .chat-text {
     width: 70%;
-    height: 10%;
+    height: 30%;
     resize: none;
 }
 
@@ -75,8 +72,8 @@
 
     <div class="chat-ui">
         <form id="chat-form">
-            <textarea class="chat-text" id="chat-box"></textarea>
-            <button type="submit" class="chat-button">SEND</button>
+            <input type="text" class="chat-text" id="chat-box"></textarea>
+            <input type="submit" value="SEND" class="chat-button">
         </form>
     </div>
 
