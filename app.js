@@ -16,6 +16,8 @@ USERS = {};
 
 ROOMS = {};
 
+const HELP_INFO = 'Help Information Placeholder';
+
 var Room = function(roomID){
     var self = {}
     self.roomID = roomID;
@@ -81,6 +83,16 @@ var Room = function(roomID){
 
             return true;
         }
+    }
+
+    self.commandSent = function(user, command){
+        msg = 'Sorry we do not support that command yet';
+
+        if (command === '/help'){
+            msg = HELP_INFO;
+        } 
+
+        user.utilCbs[0](msg);
     }
 
     return self;
@@ -169,9 +181,13 @@ nsp.on('connection', function(socket){
 
         if (USERS[socket.id] != undefined) {
             data.username = USERS[socket.id].username;
-
             var room = ROOMS[USERS[socket.id].roomID];
-            room.updateChat(data);
+
+            if (data.msg.charAt(0) === '/'){
+                room.commandSent(USERS[socket.id], data.msg);
+            } else {
+                room.updateChat(data);
+            }
         }
     });
 
