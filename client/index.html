@@ -162,5 +162,10 @@
                 online_users.innerHTML = prevText + '<li>' + data.users[i] + '</li>'
             }
         });
+
+        socket.on('removing', function(data){
+            window.location.href = 'removed.html';
+            console.log('removed');
+        });
     </script>
 </div>

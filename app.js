@@ -3,7 +3,7 @@ var app = express();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 
-var port = 80;
+var port = 3000;
 
 app.use(express.static('./client'));
 
@@ -90,7 +90,20 @@ var Room = function(roomID){
 
         if (command === '/help'){
             msg = HELP_INFO;
-        } 
+        } else if (command === '/reset') {
+            //reset page
+        } else if (command.substring(0, 5) === '/kick') {
+            var username = command.slice(6, command.length);
+            var remove = getWithUsername(username);
+            
+            if (remove != undefined){
+                remove.utilCbs[2]('You have been kicked by Moderator.'); //remove the user
+                delete SOCKET_LIST[user.socket.id];
+                msg = 'Removed user: ' + username;
+            } else {
+                msg = 'User: ' + username + ' does not exist';
+            }
+        }
 
         user.utilCbs[0](msg);
     }
@@ -111,6 +124,19 @@ var joinRoom = function(user) {
 
     ROOMS[user.roomID].addUser(user);
 };
+
+var getWithUsername = function(username) {
+    keys = Object.keys(USERS);
+    for (var i in keys){
+        user = USERS[keys[i]];
+
+        if (username === user.username) {
+            return user;
+        }
+    }
+
+    return undefined;
+}
 
 var User = function(socket, roomID, username, cb) {
     var self = {};
@@ -144,26 +170,25 @@ nsp.on('connection', function(socket){
         socket.emit('update-users', {users: users});
     };
 
+    var removeUser = function(reason) {
+        if (USERS[socket.id] != undefined) {
+            var room = ROOMS[USERS[socket.id].roomID];
+            room.removeUser(USERS[socket.id]);
+        }
+        
+        socket.emit('removing', {data: reason})
+        console.log('test');
+        delete USERS[socket.id];
+    };
+
     // when the client sends a login request
     socket.on('logged-in', function(data){
 
         // data contains: username, roomID
-        var validUsername = false;
-
-        if (ROOMS[data.roomID] === undefined) {
-            validUsername = true;
-        } else {
-            if (ROOMS[data.roomID].hasUsername(data.username)) {
-                validUsername = true;
-            }
-        }
-
-        if (data.username === ''){
-            validUsername = false;
-        }
+        var validUsername = true;
 
         if (validUsername) {
-            USERS[socket.id] = User(socket, data.roomID, data.username, [sendMsg, updateUsers]);
+            USERS[socket.id] = User(socket, data.roomID, data.username, [sendMsg, updateUsers, removeUser]);
 
             // tell the client their username is good.
             socket.emit('login-confirmed', {roomID: data.roomID});
@@ -192,15 +217,11 @@ nsp.on('connection', function(socket){
     });
 
     socket.on('disconnect', function(){
-        var user = USERS[socket.id];
-
-        if (user != undefined) {
-            var room = ROOMS[user.roomID];
-            room.removeUser(user);
+        if (USERS[socket.id] != undefined) {
+            USERS[socket.id].utilCbs[2](USERS[socket.id]);
         }
 
         delete SOCKET_LIST[socket.id];
-        delete USERS[socket.id];
     });
 });
 
