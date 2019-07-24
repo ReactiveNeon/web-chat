@@ -167,7 +167,7 @@ nsp.on('connection', function(socket){
             return;
         }
 
-        if (USERS[socket.id != undefined]) {
+        if (USERS[socket.id] != undefined) {
             data.username = USERS[socket.id].username;
 
             var room = ROOMS[USERS[socket.id].roomID];
