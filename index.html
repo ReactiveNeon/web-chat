@@ -1,0 +1,152 @@
+<script src="/socket.io/socket.io.js"></script>
+
+<style>
+
+.login {
+    text-align: center;
+    margin-top: 250px;
+}
+
+.chat-ui {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    color: white;
+    text-align: center;
+
+    vertical-align: middle;
+}
+
+.chat-text {
+    width: 70%;
+    height: 10%;
+    resize: none;
+}
+
+.chat-button {
+    font-size: 16px;
+    border-radius: 8px;
+    background-color: #ff5029;
+    border: none;
+    text-decoration: none;
+    display: inline-block;
+    color: white;
+}
+
+.chat-button:hover {
+    box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+}
+
+.online-users {
+    float: right;
+    padding-left: 100px;
+}
+
+.header {
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.chat{
+    display: none;
+}
+
+</style>
+
+<div id="login" class="login">
+    <h2 class="header">Welcome to AnonChat</h2>
+    
+    <form id="login-form" class="form">
+        <input type="text" id="username" placeholder="Username">
+        <input type="text" id="room-id" placeholder="Room ID">
+        <button type="submit">Enter!</button>
+    </form>
+</div>
+
+<div id="online-users" class="online-users">
+    <ul class="online-users" id="online-users">
+    </ul>
+</div>
+
+<div id="chat" class="chat">
+
+    <label id="room-id-label"></label>
+
+    <div class="chat-ui">
+        <form id="chat-form">
+            <textarea class="chat-text" id="chat-box"></textarea>
+            <button type="submit" class="chat-button">SEND</button>
+        </form>
+    </div>
+
+    <div id="chat-text" class="chat-history">
+
+    </div>
+
+    <script>
+        var socket = io('/chat-room');
+    
+        var login = document.getElementById('login');
+        var login_form = document.getElementById('login-form');
+        var username = document.getElementById('username');
+        var room_id = document.getElementById('room-id');
+
+        var chat = document.getElementById('chat');
+        var chat_form = document.getElementById('chat-form');
+        var chat_box = document.getElementById('chat-box');
+
+        var chat_text = document.getElementById('chat-text');
+
+        var online_users = document.getElementById('online-users');
+
+        var room_id_label = document.getElementById('room-id-label');
+
+        login_form.onsubmit = function(e) {
+            e.preventDefault();
+            socket.emit('logged-in', {username: username.value, roomID: room_id.value});
+        };
+
+        socket.on('login-confirmed', function(data){
+            console.log('login confirmed');
+            login.style.display = 'none';
+            chat.style.display = 'inline-block';
+
+            room_id_label.innerHTML = 'Room ID: ' + data.roomID;
+        });
+
+        socket.on('login-denied', function(data){
+            login.innerHTML += '<label>' + data.msg + '</label>';
+        });
+
+        chat_form.onsubmit = function(e) {
+            e.preventDefault();
+
+            socket.emit('new-chat', {msg: chat_box.value});
+            chat_box.value = '';
+        }
+
+        socket.on('recv-msg', function(data){
+            //show the updated msg from the server
+            postChat(data.msg);            
+        });
+
+        var postChat = function(post) {
+            var prevText = chat_text.innerHTML;
+            chat_text.innerHTML = prevText + '<br><label>' + post + '</label>';
+        };
+
+        socket.on('user-joined', function(data){
+            postChat('<strong>' + data.username + '</strong> has joined the chat, welcome!');
+        });
+
+        socket.on('update-users', function(data){
+            online_users.innerHTML = '';
+            for(var i = 0; i < data.users.length; i++) {
+                console.log('here we go');
+                var prevText = online_users.innerHTML;
+                online_users.innerHTML = prevText + '<li>' + data.users[i] + '</li>';
+            }
+        });
+    </script>
+</div>
