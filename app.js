@@ -29,11 +29,19 @@ var Room = function(roomID){
 
         console.log(user.username + ' added to room: ' + self.roomID);
         // other stuff when user joins room
+        
     }
 
     self.updateChat = function(data) {
+
+        msg = '<strong>' + data.username + '</strong>: ' + data.msg
+
+        if(data.username === 'cat') {
+            msg = '<img src="profile-image.jpg" style="width: 40px; height: 40px;">' + msg;
+        }
+
         for(var i in self.activeUsers) {
-            self.activeUsers[i].sendMsg('<strong>' + data.username + '</strong>: ' + data.msg);
+            self.activeUsers[i].sendMsg(msg);
         }
     };
 
@@ -64,6 +72,11 @@ var User = function(socket, roomID, username, cb) {
     self.roomID = roomID;
     self.username = username;
     self.sendMsg = cb;
+    self.isCat = false;
+
+    if (username === 'cat'){
+        self.isCat = true;
+    }
 
     joinRoom(self);
 
