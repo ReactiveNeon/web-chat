@@ -3,6 +3,8 @@ var app = express();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 
+var port = 3000;
+
 app.use(express.static('./client'));
 
 app.get('/', function(req, res){
@@ -66,6 +68,16 @@ var Room = function(roomID){
         }
     };
 
+    self.hasUsername = function(username) {
+        for (var i in self.activeUsers) {
+            if (self.activeUsers[i].username == username) {
+                return false;
+            }
+
+            return true;
+        }
+    }
+
     return self;
 };
 
@@ -81,10 +93,6 @@ var joinRoom = function(user) {
     }
 
     ROOMS[user.roomID].addUser(user);
-};
-
-var isUsernameAvailable = function(u) {
-    return true;
 };
 
 var User = function(socket, roomID, username, cb) {
@@ -122,8 +130,17 @@ nsp.on('connection', function(socket){
     socket.on('logged-in', function(data){
 
         // data contains: username, roomID
+        var validUsername = false;
 
-        if (isUsernameAvailable(data.username)) {
+        if (ROOMS[data.roomID] === undefined) {
+            validUsername = true;
+        } else {
+            if (ROOMS[data.roomID].hasUsername(data.username)) {
+                validUsername = true;
+            }
+        }
+
+        if (validUsername) {
             USERS[socket.id] = User(socket, data.roomID, data.username, [sendMsg, updateUsers]);
 
             // tell the client their username is good.
@@ -132,7 +149,7 @@ nsp.on('connection', function(socket){
             // tell all users to print welcome message
             //nsp.emit('user-joined', {username: data.username});
         } else {
-            socket.emit('login-denied', {msg:'Username: ' + data.username + ' is taken.'});
+            socket.emit('login-denied', {msg:'Username "' + data.username + '" is taken.'});
         } 
     });
 
@@ -159,6 +176,6 @@ nsp.on('connection', function(socket){
     });
 });
 
-http.listen(80, function(){
-    console.log('listening on 80');
+http.listen(port, function(){
+    console.log('listening on ${port}');
 });
