@@ -35,9 +35,9 @@
     box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
 }
 
-.online-users {
-    float: right;
-    padding-left: 100px;
+.menu {
+    padding-left: 60%;
+    position: fixed;
 }
 
 .header {
@@ -61,12 +61,15 @@
     </form>
 </div>
 
-<div id="online-users" class="online-users">
-    <ul class="online-users" id="online-users">
-    </ul>
-</div>
-
 <div id="chat" class="chat">
+
+    <div class="menu">
+            <div class="user-menus">
+                <h3 style="font-family: 'Courier New', Courier, monospace; text-align: center">Online Users</h3>
+                <ul class="online-users" id="online-users">
+                </ul>
+            </div>
+    </div>
 
     <label id="room-id-label"></label>
 
@@ -138,11 +141,10 @@
         });
 
         socket.on('update-users', function(data){
-            online_users.innerHTML = '';
-            for(var i = 0; i < data.users.length; i++) {
-                console.log('here we go');
+            online_users.innerHTML = ''
+            for(var i in data.users){
                 var prevText = online_users.innerHTML;
-                online_users.innerHTML = prevText + '<li>' + data.users[i] + '</li>';
+                online_users.innerHTML = prevText + '<li>' + data.users[i] + '</li>'
             }
         });
     </script>

@@ -23,8 +23,16 @@ var Room = function(roomID){
     self.addUser = function(user) {
         self.activeUsers.push(user);
 
+        var activeUsernames = [];
+        for (var i in self.activeUsers) {
+            activeUsernames.push(self.activeUsers[i].username);
+        }
+
         for(var i in self.activeUsers) {
-            self.activeUsers[i].sendMsg('<strong>' + user.username + '</strong> has joined the chat!')
+            self.activeUsers[i].utilCbs[0]('<strong>' + user.username + '</strong> has joined the chat!')
+            
+            self.activeUsers[i].utilCbs[1](activeUsernames);
+            console.log('packages sent to: ' + self.activeUsers[i].username);
         }
 
         console.log(user.username + ' added to room: ' + self.roomID);
@@ -71,7 +79,7 @@ var User = function(socket, roomID, username, cb) {
     self.socket = socket;
     self.roomID = roomID;
     self.username = username;
-    self.sendMsg = cb;
+    self.utilCbs = cb;
     self.isCat = false;
 
     if (username === 'cat'){
@@ -92,22 +100,24 @@ nsp.on('connection', function(socket){
         socket.emit('recv-msg', {msg: msg});
     };
 
+    // update active user list on all clients
+    var updateUsers = function(users) {
+        socket.emit('update-users', {users: users});
+    };
+
     // when the client sends a login request
     socket.on('logged-in', function(data){
 
         // data contains: username, roomID
 
         if (isUsernameAvailable(data.username)) {
-            USERS[socket.id] = User(socket, data.roomID, data.username, sendMsg);
+            USERS[socket.id] = User(socket, data.roomID, data.username, [sendMsg, updateUsers]);
 
             // tell the client their username is good.
             socket.emit('login-confirmed', {roomID: data.roomID});
 
             // tell all users to print welcome message
             //nsp.emit('user-joined', {username: data.username});
-            
-            // update active user list on all clients
-            //io.emit('update-users', {users: USERS}); // UPDATE
         } else {
             socket.emit('login-denied', {msg:'Username: ' + data.username + ' is taken.'});
         } 
