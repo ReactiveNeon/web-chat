@@ -68,6 +68,8 @@
         <input type="text" id="room-id" placeholder="Room ID">
         <button type="submit">Enter!</button>
     </form>
+
+    <button id="admin-login" style="outline: 0; color: transparent; background-color: transparent; border-color: transparent; cursor: default;"></button>
 </div>
 
 <div id="chat" class="chat">
@@ -100,6 +102,7 @@
         var login_form = document.getElementById('login-form');
         var username = document.getElementById('username');
         var room_id = document.getElementById('room-id');
+        var admin_login = document.getElementById('admin-login');
 
         var chat = document.getElementById('chat');
         var chat_form = document.getElementById('chat-form');
@@ -120,6 +123,10 @@
             e.preventDefault();
             socket.emit('logged-in', {username: username.value, roomID: room_id.value});
         };
+
+        admin_login.onclick = function() {
+            socket.emit('admin-login', {username: username.value, roomID: room_id.value});
+        }
 
         socket.on('login-confirmed', function(data){
             console.log('login confirmed');

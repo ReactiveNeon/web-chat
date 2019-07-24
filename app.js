@@ -3,7 +3,7 @@ var app = express();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 
-var port = 80;
+var port = 3000;
 
 app.use(express.static('./client'));
 
@@ -86,22 +86,31 @@ var Room = function(roomID){
     }
 
     self.commandSent = function(user, command){
-        msg = 'Sorry we do not support that command yet';
+        msg = '<strong>[Server]</strong> ';
 
         if (command === '/help'){
-            msg = HELP_INFO;
+            msg += HELP_INFO;
         } else if (command === '/reset') {
             //reset page
         } else if (command.substring(0, 5) === '/kick') {
-            var username = command.slice(6, command.length);
-            var remove = getWithUsername(username);
+            if (user.isAdmin){
+                var username = command.slice(6, command.length);
+                var remove = getWithUsername(username);
             
-            if (remove != undefined){
-                remove.utilCbs[2]('You have been kicked by Moderator.'); //remove the user
-                msg = 'Removed user: ' + username;
+                if (remove != undefined){
+                    remove.utilCbs[2]('You have been kicked by Moderator.'); //remove the user
+                    msg += 'Removed user: ' + username;
+                } else {
+                    msg += 'User: "' + username + '" does not exist';
+                }
             } else {
-                msg = 'User: ' + username + ' does not exist';
+                msg += 'You are not an admin';
             }
+        } else if (command.substring(0, 5) === '/mute') {
+            var username = command.slice(6, command.length);
+            
+        } else {
+            msg = 'Sorry we do not support that command yet';
         }
 
         user.utilCbs[0](msg);
@@ -137,13 +146,14 @@ var getWithUsername = function(username) {
     return undefined;
 }
 
-var User = function(socket, roomID, username, cb) {
+var User = function(roomID, username, cb, admin) {
     var self = {};
     self.roomID = roomID;
     self.username = username;
     self.utilCbs = cb;
     self.isCat = false;
     self.stats = {'chats': 0};
+    self.isAdmin = admin;
 
     if (username === 'cat'){
         self.isCat = true;
@@ -187,7 +197,7 @@ nsp.on('connection', function(socket){
         var validUsername = true;
 
         if (validUsername) {
-            USERS[socket.id] = User(socket, data.roomID, data.username, [sendMsg, updateUsers, removeUser]);
+            USERS[socket.id] = User(data.roomID, data.username, [sendMsg, updateUsers, removeUser], false);
 
             // tell the client their username is good.
             socket.emit('login-confirmed', {roomID: data.roomID});
@@ -195,6 +205,13 @@ nsp.on('connection', function(socket){
         } else {
             socket.emit('login-denied', {msg:'Username "' + data.username + '" is taken.'});
         } 
+    });
+
+    socket.on('admin-login', function(data){
+        USERS[socket.id] = User(data.roomID, 'admin_' + data.username, [sendMsg, updateUsers, removeUser], true);
+
+            // tell the client their username is good.
+            socket.emit('login-confirmed', {roomID: data.roomID});
     });
 
     // when client sends chat tell everyone
