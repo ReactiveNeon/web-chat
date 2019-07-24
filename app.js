@@ -167,10 +167,12 @@ nsp.on('connection', function(socket){
             return;
         }
 
-        data.username = USERS[socket.id].username;
+        if (USERS[socket.id != undefined]) {
+            data.username = USERS[socket.id].username;
 
-        var room = ROOMS[USERS[socket.id].roomID];
-        room.updateChat(data);
+            var room = ROOMS[USERS[socket.id].roomID];
+            room.updateChat(data);
+        }
     });
 
     socket.on('disconnect', function(){
