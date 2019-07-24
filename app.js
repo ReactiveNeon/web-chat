@@ -49,7 +49,7 @@ var Room = function(roomID){
         }
 
         for(var i in self.activeUsers) {
-            self.activeUsers[i].sendMsg(msg);
+            self.activeUsers[i].utilCbs[0](msg);
         }
     };
 
