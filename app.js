@@ -98,7 +98,6 @@ var Room = function(roomID){
             
             if (remove != undefined){
                 remove.utilCbs[2]('You have been kicked by Moderator.'); //remove the user
-                delete SOCKET_LIST[user.socket.id];
                 msg = 'Removed user: ' + username;
             } else {
                 msg = 'User: ' + username + ' does not exist';
@@ -140,7 +139,6 @@ var getWithUsername = function(username) {
 
 var User = function(socket, roomID, username, cb) {
     var self = {};
-    self.socket = socket;
     self.roomID = roomID;
     self.username = username;
     self.utilCbs = cb;
@@ -179,6 +177,7 @@ nsp.on('connection', function(socket){
         socket.emit('removing', {data: reason})
         console.log('test');
         delete USERS[socket.id];
+        delete SOCKET_LIST[socket.id];
     };
 
     // when the client sends a login request
