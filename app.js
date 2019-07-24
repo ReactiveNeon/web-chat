@@ -148,8 +148,11 @@ nsp.on('connection', function(socket){
 
     socket.on('disconnect', function(){
         var user = USERS[socket.id];
-        var room = ROOMS[user.roomID];
-        room.removeUser(user);
+
+        if (user != undefined) {
+            var room = ROOMS[user.roomID];
+            room.removeUser(user);
+        }
 
         delete SOCKET_LIST[socket.id];
         delete USERS[socket.id];
