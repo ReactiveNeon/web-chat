@@ -40,6 +40,19 @@ var Room = function(roomID){
         
     }
 
+    self.removeUser = function(user) {
+        self.activeUsers.splice(self.activeUsers.indexOf(user), 1);
+
+        var activeUsernames = [];
+        for (var i in self.activeUsers) {
+            activeUsernames.push(self.activeUsers[i].username);
+        }
+
+        for (var i in self.activeUsers) {
+            self.activeUsers[i].utilCbs[1](activeUsernames);
+        }
+    }
+
     self.updateChat = function(data) {
 
         msg = '<strong>' + data.username + '</strong>: ' + data.msg
@@ -129,12 +142,15 @@ nsp.on('connection', function(socket){
     socket.on('new-chat', function(data){
         data.username = USERS[socket.id].username;
 
-        //nsp.to('test').emit('recv-chat', {msg: '<strong>' + USERS[socket.id].username + '</strong>: ' + data.msg});
-        room = ROOMS[USERS[socket.id].roomID];
+        var room = ROOMS[USERS[socket.id].roomID];
         room.updateChat(data);
     });
 
     socket.on('disconnect', function(){
+        var user = USERS[socket.id];
+        var room = ROOMS[user.roomID];
+        room.removeUser(user);
+
         delete SOCKET_LIST[socket.id];
         delete USERS[socket.id];
     });
