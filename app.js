@@ -107,6 +107,7 @@ var User = function(socket, roomID, username, cb) {
     self.username = username;
     self.utilCbs = cb;
     self.isCat = false;
+    self.stats = {'chats': 0};
 
     if (username === 'cat'){
         self.isCat = true;
@@ -143,6 +144,10 @@ nsp.on('connection', function(socket){
             if (ROOMS[data.roomID].hasUsername(data.username)) {
                 validUsername = true;
             }
+        }
+
+        if (data.username === ''){
+            validUsername = false;
         }
 
         if (validUsername) {
