@@ -37,7 +37,7 @@ var Room = function(roomID){
         }
 
         for(var i in self.activeUsers) {
-            msg = '<strong>' + user.username + '</strong> has joined the chat!';
+            msg = '<h4><i style="color: red; font-size: 25;">' + user.username + ' </i> has joined the chat!</h4>';
             self.history.push(msg);
             self.activeUsers[i].utilCbs[0](msg);
             
