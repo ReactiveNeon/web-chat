@@ -3,7 +3,7 @@ var app = express();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 
-var port = 3000;
+var port = 80;
 
 app.use(express.static('./client'));
 
@@ -152,8 +152,6 @@ nsp.on('connection', function(socket){
             socket.emit('login-denied', {msg:'Username "' + data.username + '" is taken.'});
         } 
     });
-
-
 
     // when client sends chat tell everyone
     socket.on('new-chat', function(data){
