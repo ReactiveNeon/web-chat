@@ -158,6 +158,10 @@ nsp.on('connection', function(socket){
 
     // when client sends chat tell everyone
     socket.on('new-chat', function(data){
+        if (data.msg === ''){
+            return;
+        }
+
         data.username = USERS[socket.id].username;
 
         var room = ROOMS[USERS[socket.id].roomID];
