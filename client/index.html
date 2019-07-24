@@ -47,6 +47,15 @@
 
 .chat{
     display: none;
+    width: 60%;
+}
+
+.chat-history {
+    overflow-y: auto;
+    display:flex;
+    flex-direction: column-reverse;
+    height:90%;
+    width:100%;
 }
 
 </style>
@@ -74,7 +83,7 @@
     <label id="room-id-label"></label>
 
     <div class="chat-ui">
-        <form id="chat-form">
+        <form id="chat-form" autocomplete="off">
             <input type="text" class="chat-text" id="chat-box"></textarea>
             <input type="submit" value="SEND" class="chat-button">
         </form>
@@ -101,6 +110,11 @@
         var online_users = document.getElementById('online-users');
 
         var room_id_label = document.getElementById('room-id-label');
+
+        var updateScroll = function() {
+            chat_box.scrollTop = chat_box.scrollHeight;
+            console.log('auto scrolled');
+        }
 
         login_form.onsubmit = function(e) {
             e.preventDefault();
@@ -133,7 +147,8 @@
 
         var postChat = function(post) {
             var prevText = chat_text.innerHTML;
-            chat_text.innerHTML = prevText + '<br><label>' + post + '</label>';
+            chat_text.innerHTML = '<br><label>' + post + '</label>' + prevText;
+            updateScroll();
         };
 
         socket.on('user-joined', function(data){
