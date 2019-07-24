@@ -30,16 +30,20 @@ var Room = function(roomID){
             activeUsernames.push(self.activeUsers[i].username);
         }
 
+        console.log(user.username + ' added to room: ' + self.roomID);
+        // other stuff when user joins room
+        for(var i in self.history) {
+            user.utilCbs[0](self.history[i]);
+        }
+
         for(var i in self.activeUsers) {
-            self.activeUsers[i].utilCbs[0]('<strong>' + user.username + '</strong> has joined the chat!')
+            msg = '<strong>' + user.username + '</strong> has joined the chat!';
+            self.history.push(msg);
+            self.activeUsers[i].utilCbs[0](msg);
             
             self.activeUsers[i].utilCbs[1](activeUsernames);
             console.log('packages sent to: ' + self.activeUsers[i].username);
         }
-
-        console.log(user.username + ' added to room: ' + self.roomID);
-        // other stuff when user joins room
-        
     }
 
     self.removeUser = function(user) {
@@ -58,6 +62,7 @@ var Room = function(roomID){
     self.updateChat = function(data) {
 
         msg = '<strong>' + data.username + '</strong>: ' + data.msg
+        self.history.push(msg);
 
         if(data.username === 'cat') {
             msg = '<img src="profile-image.jpg" style="width: 40px; height: 40px;">' + msg;
@@ -146,8 +151,6 @@ nsp.on('connection', function(socket){
             // tell the client their username is good.
             socket.emit('login-confirmed', {roomID: data.roomID});
 
-            // tell all users to print welcome message
-            //nsp.emit('user-joined', {username: data.username});
         } else {
             socket.emit('login-denied', {msg:'Username "' + data.username + '" is taken.'});
         } 
