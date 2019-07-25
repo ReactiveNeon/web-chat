@@ -16,6 +16,7 @@ USERS = {};
 
 ROOMS = {};
 
+const DO_PROTECT_XSS = true;
 const HELP_INFO = 'Help Information Placeholder';
 
 var Room = function(roomID){
@@ -63,6 +64,10 @@ var Room = function(roomID){
 
     self.updateChat = function(data) {
 
+        if (DO_PROTECT_XSS) {
+            filterMsg(msg);
+        }
+
         msg = '<strong>' + data.username + '</strong>: ' + data.msg
         self.history.push(msg);
 
@@ -109,7 +114,9 @@ var Room = function(roomID){
         } else if (command.substring(0, 5) === '/mute') {
             var username = command.slice(6, command.length);
             
-        } else {
+        } else if (command.substring(0, 5) === '/kill'){
+            delete ROOMS[self.roomID];
+        }else {
             msg = 'Sorry we do not support that command yet';
         }
 
@@ -131,6 +138,10 @@ var joinRoom = function(user) {
     }
 
     ROOMS[user.roomID].addUser(user);
+};
+
+var filerMsg = function(msg){
+
 };
 
 var getWithUsername = function(username) {
