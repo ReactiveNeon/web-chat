@@ -3,7 +3,7 @@ var app = express();
 var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 
-var port = 80;
+var port = 3000;
 
 app.use(express.static('./client'));
 
@@ -168,6 +168,26 @@ const nsp = io.of('/chat-room');
 nsp.on('connection', function(socket){
     socket.id = Math.random();
     SOCKET_LIST[socket.id] = socket;
+
+    var roomElement = function(roomID, activeUsers) {
+        this.roomID = roomID;
+        this.activeUsers = activeUsers;
+    };
+    var elements = [];
+    for (var i in Object.keys(ROOMS)){
+        if (ROOMS[Object.keys(ROOMS)[i]] != undefined){
+            var activeUsers = 0;
+
+            if (ROOMS[Object.keys(ROOMS)[i]].activeUsers != undefined){
+                activeUsers = ROOMS[Object.keys(ROOMS)[i]].activeUsers.length;
+            }
+
+            console.log(ROOMS[Object.keys(ROOMS)[i]].roomID);
+
+            elements.push(new roomElement(ROOMS[Object.keys(ROOMS)[i]].roomID, activeUsers))
+        }
+    }
+    socket.emit('chat-room-list', {rooms: elements});
 
     var sendMsg = function(msg) {
         socket.emit('recv-msg', {msg: msg});

@@ -58,18 +58,32 @@
     width:100%;
 }
 
+.loginpage-info {
+    position:fixed;
+    padding-left: 70%;
+    top: 0;
+}
+
 </style>
 
 <div id="login" class="login">
-    <h2 class="header">Welcome to BaffqdChat</h2>
-    
-    <form id="login-form" class="form">
-        <input type="text" id="username" placeholder="Username">
-        <input type="text" id="room-id" placeholder="Room ID">
-        <button type="submit">Enter!</button>
-    </form>
+    <div class="loginpage-form">
+        <h2 class="header">Welcome to BaffqdChat</h2>
+        
+        <form id="login-form" class="form">
+            <input type="text" id="username" placeholder="Username">
+            <input type="text" id="room-id" placeholder="Room ID">
+            <button type="submit">Enter!</button>
+        </form>
 
-    <button id="admin-login" style="outline: 0; color: transparent; background-color: transparent; border-color: transparent; cursor: default;"></button>
+        <button id="admin-login" style="outline: 0; color: transparent; background-color: transparent; border-color: transparent; cursor: default;"></button>
+    </div>
+
+    <div class="loginpage-info">
+        <h3 style="font-family: 'Courier New', Courier, monospace">Live Rooms</h3>
+        <ul id="chat-room-list">
+        </ul>
+    </div>
 </div>
 
 <div id="chat" class="chat">
@@ -113,6 +127,15 @@
         var online_users = document.getElementById('online-users');
 
         var room_id_label = document.getElementById('room-id-label');
+
+        var chat_room_list = document.getElementById('chat-room-list');
+
+        socket.on('chat-room-list', function(data){
+            for(var i in data.rooms){
+                var prevText = chat_room_list.innerHTML;
+                chat_room_list.innerHTML = prevText + '<li><strong>' + data.rooms[i].roomID + '</strong>: ' + data.rooms[i].activeUsers + '</li>';
+            }
+        });
 
         var updateScroll = function() {
             chat_box.scrollTop = chat_box.scrollHeight;
