@@ -65,7 +65,7 @@ var Room = function(roomID){
     self.updateChat = function(data) {
 
         if (DO_PROTECT_XSS) {
-            filterMsg(msg);
+            //filterMsg(msg);
         }
 
         msg = '<strong>' + data.username + '</strong>: ' + data.msg
